@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Scripta &amp; Verbum — Caderno Digital &amp; Estudo Bíblico</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#7E57C2" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Patrick+Hand&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-app: #F4F1F8;
+      --bg-sidebar: #FFFFFF;
+      --bg-toolbar: #FFFFFF;
+      --primary: #7E57C2;
+      --primary-dark: #5E35B1;
+      --primary-light: #EDE7F6;
+      --accent-gold: #D4AF37;
+      --accent-pink: #E91E63;
+      --text-main: #2D2638;
+      --text-muted: #6E657D;
+      --border: #E2DCEB;
+      --shadow: 0 4px 20px rgba(45, 38, 56, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-app);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease;
+      z-index: 30;
+    }
+    .sidebar-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+    .brand span.badge {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.65rem;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 2px 6px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .new-note-btn {
+      margin: 14px 16px 8px;
+      padding: 11px 14px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 3px 10px rgba(126, 87, 194, 0.3);
+    }
+    .new-note-btn:hover { opacity: 0.95; }
+
+    .category-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 6px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .cat-btn {
+      flex: 1;
+      padding: 6px 4px;
+      border: 1px solid var(--border);
+      background: #FAF8FC;
+      border-radius: 8px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .cat-btn.active {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border-color: var(--primary);
+    }
+
+    .notes-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .note-item {
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: #FAF8FC;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .note-item:hover { border-color: var(--border); background: #F3EFFA; }
+    .note-item.active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+    .note-item-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      padding-right: 20px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .note-item-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .note-tag {
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .tag-biblia { background: #FFF8E1; color: #9C6F00; }
+    .tag-estudo { background: #E8F5E9; color: #2E7D32; }
+    .delete-note {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .delete-note:hover { color: #D32F2F; }
+
+    .sidebar-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+    .backup-btn {
+      flex: 1;
+      padding: 7px 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-main);
+    }
+    .backup-btn:hover { background: var(--primary-light); }
+
+    /* Main Workspace */
+    .workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* Top Toolbar */
+    .toolbar {
+      background: var(--bg-toolbar);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      z-index: 20;
+    }
+    .tool-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding-right: 8px;
+      border-right: 1px solid var(--border);
+    }
+    .tool-group:last-child { border-right: none; }
+
+    .tool-btn {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: 0.15s;
+    }
+    .tool-btn:hover { background: #F5F2FA; }
+    .tool-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    select.tool-select {
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      background: #fff;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .color-swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px #ccc;
+      cursor: pointer;
+    }
+    .color-swatch.active {
+      box-shadow: 0 0 0 2px var(--primary-dark);
+      transform: scale(1.1);
+    }
+
+    /* Canvas Area */
+    .canvas-viewport {
+      flex: 1;
+      overflow: auto;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background: radial-gradient(#D9D0E8 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    .page-sheet {
+      width: 820px;
+      min-height: 1120px;
+      background: #FFFFFF;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      position: relative;
+      padding: 44px 48px;
+      transition: background 0.2s, color 0.2s;
+      overflow: hidden;
+    }
+
+    /* Paper Colors */
+    .page-sheet.paper-white { background-color: #FFFFFF; color: #222; }
+    .page-sheet.paper-cream { background-color: #FDF8EC; color: #2E261B; }
+    .page-sheet.paper-lilac { background-color: #F9F5FF; color: #281E38; }
+    .page-sheet.paper-dark  { background-color: #1E1B24; color: #EFEBF5; }
+
+    /* Paper Patterns */
+    .page-sheet.pattern-lined {
+      background-image: linear-gradient(to bottom, transparent 31px, rgba(126, 87, 194, 0.16) 32px);
+      background-size: 100% 32px;
+    }
+    .page-sheet.pattern-grid {
+      background-image:
+        linear-gradient(to right, rgba(126, 87, 194, 0.13) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(126, 87, 194, 0.13) 1px, transparent 1px);
+      background-size: 26px 26px;
+    }
+    .page-sheet.pattern-dotted {
+      background-image: radial-gradient(rgba(126, 87, 194, 0.32) 1.3px, transparent 1.3px);
+      background-size: 24px 24px;
+    }
+
+    .note-header-fields {
+      position: relative;
+      z-index: 5;
+      margin-bottom: 18px;
+      border-bottom: 2px solid rgba(126, 87, 194, 0.25);
+      padding-bottom: 12px;
+    }
+    .note-title-input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: inherit;
+      font-family: inherit;
+      outline: none;
+      margin-bottom: 6px;
+    }
+    .note-submeta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
+    .note-submeta input, .note-submeta select {
+      border: 1px dashed rgba(126, 87, 194, 0.35);
+      background: rgba(255, 255, 255, 0.45);
+      color: inherit;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+    }
+
+    .note-editor {
+      position: relative;
+      z-index: 5;
+      min-height: 920px;
+      outline: none;
+      line-height: 32px;
+      font-size: 1.05rem;
+      user-select: text;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .note-editor:empty:before {
+      content: attr(data-placeholder);
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    /* Stylus Drawing Canvas Layer */
+    #drawCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      touch-action: none;
+    }
+    #drawCanvas.drawing-active {
+      pointer-events: auto;
+      cursor: crosshair;
+    }
+
+    /* Floating Objects (Post-its, Stickers, Images) */
+    .floating-item {
+      position: absolute;
+      z-index: 15;
+      cursor: move;
+      border: 1px dashed transparent;
+      transition: box-shadow 0.15s;
+    }
+    .floating-item:hover, .floating-item.selected {
+      border-color: var(--primary);
+    }
+    .floating-controls {
+      position: absolute;
+      top: -26px;
+      right: 0;
+      display: none;
+      gap: 4px;
+      background: var(--primary-dark);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    .floating-item:hover .floating-controls,
+    .floating-item.selected .floating-controls {
+      display: flex;
+    }
+    .floating-controls button {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 0.72rem;
+      cursor: pointer;
+      padding: 1px 4px;
+    }
+
+    .postit-box {
+      width: 190px;
+      min-height: 165px;
+      padding: 14px;
+      border-radius: 4px 4px 18px 4px;
+      box-shadow: 3px 5px 14px rgba(0,0,0,0.14);
+      font-family: 'Patrick Hand', cursive;
+      font-size: 1.1rem;
+      color: #2A2433;
+      line-height: 1.35;
+    }
+    .postit-content {
+      outline: none;
+      min-height: 130px;
+      user-select: text;
+      cursor: text;
+    }
+
+    .sticker-box {
+      width: 96px;
+      height: 96px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sticker-box svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.12));
+    }
+
+    .image-box {
+      width: 240px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      background: #fff;
+    }
+    .image-box img {
+      width: 100%;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* Modals / Popovers */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(25, 18, 36, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      background: #fff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 480px;
+      padding: 22px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .modal-header h3 { font-size: 1.1rem; color: var(--primary-dark); }
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .sticker-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .sticker-choice {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      background: #FAF8FC;
+      transition: 0.15s;
+    }
+    .sticker-choice:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      transform: translateY(-2px);
+    }
+    .sticker-choice span {
+      display: block;
+      font-size: 0.7rem;
+      margin-top: 4px;
+      color: var(--text-muted);
+    }
+
+    .share-preview {
+      width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 14px;
+      background: #F4F1F8;
+    }
+    .share-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .mobile-toggle { display: none; }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        position: fixed;
+        top: 0; bottom: 0; left: 0;
+        transform: translateX(-100%);
+      }
+      .sidebar.open { transform: translateX(0); }
+      .mobile-toggle { display: inline-flex; }
+      .page-sheet { width: 100%; padding: 28px 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <span>📖 Scripta &amp; Verbum</span>
+      </div>
+      <button class="mobile-toggle tool-btn" onclick="toggleSidebar()">✕</button>
+    </div>
+
+    <button class="new-note-btn" onclick="createNewNote()">＋ Nova Anotação</button>
+
+    <div class="category-tabs">
+      <button class="cat-btn active" data-filter="all" onclick="setFilter('all', this)">Todas</button>
+      <button class="cat-btn" data-filter="biblia" onclick="setFilter('biblia', this)">✝️ Bíblicas</button>
+      <button class="cat-btn" data-filter="estudo" onclick="setFilter('estudo', this)">📚 Estudos</button>
+    </div>
+
+    <div class="notes-list" id="notesList"></div>
+
+    <div class="sidebar-footer">
+      <button class="backup-btn" onclick="exportBackupJSON()" title="Salvar backup das notas">💾 Backup</button>
+      <button class="backup-btn" onclick="document.getElementById('importJsonInput').click()" title="Restaurar backup">📂 Restaurar</button>
+      <input type="file" id="importJsonInput" accept=".json" style="display:none" onchange="importBackupJSON(event)" />
+    </div>
+  </aside>
+
+  <!-- Main Workspace -->
+  <main class="workspace">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="tool-group">
+        <button class="tool-btn mobile-toggle" onclick="toggleSidebar()">☰ Notas</button>
+        <button class="tool-btn active" id="modeTextBtn" onclick="setMode('text')">⌨️ Texto</button>
+        <button class="tool-btn" id="modePenBtn" onclick="setMode('pen')">✒️ Caneta</button>
+        <button class="tool-btn" id="modeHighlighterBtn" onclick="setMode('highlighter')">🖍️ Marca-texto</button>
+        <button class="tool-btn" id="modeEraserBtn" onclick="setMode('eraser')">🧹 Borracha</button>
+        <button class="tool-btn" onclick="clearDrawing()" title="Limpar traços da caneta">↺ Limpar Traço</button>
+      </div>
+
+      <div class="tool-group">
+        <select class="tool-select" id="penSize" title="Espessura do traço">
+          <option value="2">Fina (2px)</option>
+          <option value="4" selected>Média (4px)</option>
+          <option value="8">Grossa (8px)</option>
+          <option value="18">Marca-texto (18px)</option>
+        </select>
+        <div class="color-swatch active" style="background:#2D2638" onclick="setInkColor('#2D2638', this)" title="Preto"></div>
+        <div class="color-swatch" style="background:#5E35B1" onclick="setInkColor('#5E35B1', this)" title="Roxo"></div>
+        <div class="color-swatch" style="background:#1565C0" onclick="setInkColor('#1565C0', this)" title="Azul"></div>
+        <div class="color-swatch" style="background:#C62828" onclick="setInkColor('#C62828', this)" title="Carmesim"></div>
+        <div class="color-swatch" style="background:#D4AF37" onclick="setInkColor('#D4AF37', this)" title="Dourado"></div>
+        <div class="color-swatch" style="background:#FFF176" onclick="setInkColor('#FFF176', this)" title="Amarelo Marca-texto"></div>
+        <input type="color" id="customColorPicker" value="#7E57C2" style="width:26px;height:26px;border:none;background:none;cursor:pointer" onchange="setInkColor(this.value)" title="Cor personalizada" />
+      </div>
+
+      <div class="tool-group">
+        <select class="tool-select" id="fontSelector" onchange="changeFont(this.value)" title="Fonte do texto">
+          <option value="'Inter', sans-serif">Inter (Moderna)</option>
+          <option value="'Lora', serif">Lora (Leitura Bíblica)</option>
+          <option value="'Cormorant Garamond', serif">Cormorant (Clássica)</option>
+          <option value="'Patrick Hand', cursive">Patrick Hand (Manuscrita)</option>
+        </select>
+        <button class="tool-btn" onclick="document.getElementById('fontFileInput').click()" title="Importar fonte .ttf ou .otf do tablet">＋ Fonte</button>
+        <input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" style="display:none" onchange="loadCustomFont(event)" />
+      </div>
+
+      <div class="tool-group">
+        <select class="tool-select" id="paperPattern" onchange="changePattern(this.value)" title="Estilo de folha">
+          <option value="pattern-lined">Pautado</option>
+          <option value="pattern-dotted">Pontilhado</option>
+          <option value="pattern-grid">Quadriculado</option>
+          <option value="pattern-blank">Em Branco</option>
+        </select>
+        <select class="tool-select" id="paperColor" onchange="changePaperColor(this.value)" title="Cor do papel">
+          <option value="paper-white">Branco</option>
+          <option value="paper-cream">Papiro / Creme</option>
+          <option value="paper-lilac">Lilás Suave</option>
+          <option value="paper-dark">Modo Escuro</option>
+        </select>
+        <button class="tool-btn" onclick="insertBiblicalTemplate()" title="Inserir roteiro devocional/exegético">✝️ Roteiro Bíblico</button>
+      </div>
+
+      <div class="tool-group">
+        <button class="tool-btn" onclick="addPostIt()">📝 Post-it</button>
+        <button class="tool-btn" onclick="openStickerModal()">✨ Adesivos</button>
+        <button class="tool-btn" onclick="document.getElementById('imageInput').click()">🖼️ Imagem</button>
+        <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="addImageFile(event)" />
+        <button class="tool-btn" style="background:#EDE7F6;color:#5E35B1;font-weight:600" onclick="openShareModal()">📤 Compartilhar</button>
+      </div>
+    </div>
+
+    <!-- Canvas Viewport -->
+    <div class="canvas-viewport">
+      <div class="page-sheet paper-white pattern-lined" id="pageSheet">
+        <div class="note-header-fields">
+          <input type="text" class="note-title-input" id="noteTitle" placeholder="Título da anotação ou passagem bíblica..." oninput="saveCurrentNote()" />
+          <div class="note-submeta">
+            <select id="noteCategory" onchange="saveCurrentNote()">
+              <option value="biblia">✝️ Estudo Bíblico / Devocional</option>
+              <option value="estudo">📚 Estudos Gerais</option>
+            </select>
+            <input type="text" id="noteReference" placeholder="Referência (ex: Salmos 23:1-6 ou Aula 04)" oninput="saveCurrentNote()" />
+            <span id="noteDateDisplay" style="align-self:center"></span>
+          </div>
+        </div>
+
+        <div class="note-editor" id="noteEditor" contenteditable="true" data-placeholder="Comece a escrever suas anotações aqui ou ative a Caneta na barra superior para escrever com a stylus do tablet..." oninput="saveCurrentNote()"></div>
+
+        <canvas id="drawCanvas"></canvas>
+      </div>
+    </div>
+  </main>
+
+  <!-- Sticker Modal -->
+  <div class="modal-backdrop" id="stickerModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>✨ Adesivos Temáticos</h3>
+        <button class="close-modal" onclick="closeModal('stickerModal')">✕</button>
+      </div>
+      <div class="sticker-grid" id="stickerGrid"></div>
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div class="modal-backdrop" id="shareModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📤 Compartilhar nas Redes Sociais</h3>
+        <button class="close-modal" onclick="closeModal('shareModal')">✕</button>
+      </div>
+      <img id="sharePreviewImg" class="share-preview" alt="Prévia da nota" />
+      <div class="share-actions">
+        <button class="tool-btn" style="justify-content:center;padding:10px" onclick="nativeShareImage()">📱 Instagram / Apps</button>
+        <button class="tool-btn" style="justify-content:center;padding:10px" onclick="downloadNotePNG()">⬇️ Baixar Imagem PNG</button>
+        <button class="tool-btn" style="justify-content:center;padding:10px" onclick="shareWhatsAppText()">💬 Enviar Texto WhatsApp</button>
+        <button class="tool-btn" style="justify-content:center;padding:10px" onclick="copyNoteSummary()">📋 Copiar Resumo</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- State & Storage ---
+    const STORAGE_KEY = 'scripta_verbum_notes_v1';
+    const FONTS_KEY = 'scripta_verbum_custom_fonts_v1';
+    let notes = [];
+    let currentNoteId = null;
+    let currentFilter = 'all';
+    let currentMode = 'text';
+    let inkColor = '#2D2638';
+    let isDrawing = false;
+    let lastX = 0, lastY = 0;
+    let shareBlob = null;
+
+    const STICKERS = [
+      { name: 'Cruz Dourada', svg: '<svg viewBox="0 0 100 100"><rect x="42" y="10" width="16" height="80" rx="4" fill="#D4AF37"/><rect x="20" y="30" width="60" height="16" rx="4" fill="#D4AF37"/></svg>' },
+      { name: 'Bíblia Aberta', svg: '<svg viewBox="0 0 100 100"><path d="M12 25 Q32 18 50 28 Q68 18 88 25 L88 78 Q68 70 50 80 Q32 70 12 78 Z" fill="#FFF8E1" stroke="#7E57C2" stroke-width="4"/><line x1="50" y1="28" x2="50" y2="80" stroke="#7E57C2" stroke-width="3"/></svg>' },
+      { name: 'Pomba da Paz', svg: '<svg viewBox="0 0 100 100"><path d="M20 55 C30 35, 55 25, 78 32 C68 44, 72 58, 82 65 C60 66, 48 75, 25 70 C30 62, 24 58, 20 55 Z" fill="#EDE7F6" stroke="#5E35B1" stroke-width="3"/></svg>' },
+      { name: 'Coração Fé', svg: '<svg viewBox="0 0 100 100"><path d="M50 84 C20 64, 10 42, 26 26 C38 15, 50 28, 50 28 C50 28, 62 15, 74 26 C90 42, 80 64, 50 84 Z" fill="#F48FB1" stroke="#C2185B" stroke-width="3"/></svg>' },
+      { name: 'Estrela Destaque', svg: '<svg viewBox="0 0 100 100"><polygon points="50,10 61,38 91,38 67,56 76,85 50,67 24,85 33,56 9,38 39,38" fill="#FFD54F" stroke="#F57F17" stroke-width="3"/></svg>' },
+      { name: 'Lâmpada Ideia', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="40" r="24" fill="#FFF59D" stroke="#FBC02D" stroke-width="4"/><rect x="40" y="64" width="20" height="14" rx="4" fill="#90A4AE"/></svg>' },
+      { name: 'Selo Importante', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="#7E57C2"/><text x="50" y="56" text-anchor="middle" fill="#FFF" font-size="16" font-weight="bold" font-family="sans-serif">FOCO</text></svg>' },
+      { name: 'Check Concluído', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="#A5D6A7" stroke="#2E7D32" stroke-width="4"/><polyline points="32,52 45,65 70,36" fill="none" stroke="#1B5E20" stroke-width="6" stroke-linecap="round"/></svg>' }
+    ];
+
+    const canvas = document.getElementById('drawCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const sheet = document.getElementById('pageSheet');
+      const temp = canvas.toDataURL();
+      canvas.width = sheet.offsetWidth;
+      canvas.height = sheet.offsetHeight;
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0);
+      img.src = temp;
+    }
+
+    // --- Init ---
+    window.addEventListener('DOMContentLoaded', () => {
+      restoreSavedFonts();
+      loadNotes();
+      renderStickerGrid();
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      setupPointerDrawing();
+    });
+
+    function loadNotes() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        notes = JSON.parse(raw);
+      }
+      if (!notes.length) {
+        notes = [{
+          id: Date.now().toString(),
+          title: 'Devocional — Salmos 23',
+          category: 'biblia',
+          reference: 'Salmos 23:1-6',
+          date: new Date().toLocaleDateString('pt-BR'),
+          content: 'O Senhor é o meu pastor; nada me faltará.
+
+📌 Palavras-chave: Pastor, descanso, guia, confiança.
+💡 Aplicação: Descansar na direção de Deus mesmo nos vales.',
+          font: "'Lora', serif",
+          pattern: 'pattern-lined',
+          paperColor: 'paper-cream',
+          drawing: '',
+          items: [
+            { type: 'postit', x: 540, y: 170, color: '#FFF59D', text: 'Memorizar versículo 1 nesta semana ✨' }
+          ]
+        }];
+        persistNotes();
+      }
+      renderNotesList();
+      selectNote(notes[0].id);
+    }
+
+    function persistNotes() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+    }
+
+    function createNewNote() {
+      const newNote = {
+        id: Date.now().toString(),
+        title: 'Nova Anotação',
+        category: currentFilter === 'estudo' ? 'estudo' : 'biblia',
+        reference: '',
+        date: new Date().toLocaleDateString('pt-BR'),
+        content: '',
+        font: "'Inter', sans-serif",
+        pattern: 'pattern-lined',
+        paperColor: 'paper-white',
+        drawing: '',
+        items: []
+      };
+      notes.unshift(newNote);
+      persistNotes();
+      renderNotesList();
+      selectNote(newNote.id);
+    }
+
+    function selectNote(id) {
+      currentNoteId = id;
+      const note = notes.find(n => n.id === id);
+      if (!note) return;
+
+      document.getElementById('noteTitle').value = note.title;
+      document.getElementById('noteCategory').value = note.category;
+      document.getElementById('noteReference').value = note.reference || '';
+      document.getElementById('noteDateDisplay').textContent = '📅 ' + note.date;
+      const editor = document.getElementById('noteEditor');
+      editor.innerHTML = note.content;
+      editor.style.fontFamily = note.font || "'Inter', sans-serif";
+      document.getElementById('fontSelector').value = note.font || "'Inter', sans-serif";
+
+      changePattern(note.pattern || 'pattern-lined', false);
+      changePaperColor(note.paperColor || 'paper-white', false);
+      document.getElementById('paperPattern').value = note.pattern || 'pattern-lined';
+      document.getElementById('paperColor').value = note.paperColor || 'paper-white';
+
+      // Clear & load drawing
+      resizeCanvas();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (note.drawing) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = note.drawing;
+      }
+
+      // Render floating items
+      document.querySelectorAll('.floating-item').forEach(el => el.remove());
+      (note.items || []).forEach(item => createFloatingElement(item, false));
+
+      renderNotesList();
+    }
+
+    function saveCurrentNote() {
+      const note = notes.find(n => n.id === currentNoteId);
+      if (!note) return;
+      note.title = document.getElementById('noteTitle').value || 'Sem título';
+      note.category = document.getElementById('noteCategory').value;
+      note.reference = document.getElementById('noteReference').value;
+      note.content = document.getElementById('noteEditor').innerHTML;
+      note.font = document.getElementById('fontSelector').value;
+      note.pattern = document.getElementById('paperPattern').value;
+      note.paperColor = document.getElementById('paperColor').value;
+      note.drawing = canvas.toDataURL();
+
+      // Serialize floating items
+      const items = [];
+      document.querySelectorAll('.floating-item').forEach(el => {
+        const type = el.dataset.type;
+        const x = parseInt(el.style.left, 10) || 100;
+        const y = parseInt(el.style.top, 10) || 150;
+        if (type === 'postit') {
+          items.push({
+            type, x, y,
+            color: el.dataset.color,
+            text: el.querySelector('.postit-content').innerHTML
+          });
+        } else if (type === 'sticker') {
+          items.push({
+            type, x, y,
+            width: el.offsetWidth,
+            svg: el.querySelector('.sticker-box').innerHTML
+          });
+        } else if (type === 'image') {
+          items.push({
+            type, x, y,
+            width: el.offsetWidth,
+            src: el.querySelector('img').src
+          });
+        }
+      });
+      note.items = items;
+
+      persistNotes();
+      renderNotesList();
+    }
+
+    function deleteNote(id, e) {
+      e.stopPropagation();
+      if (notes.length === 1) return alert('Mantenha pelo menos uma anotação no caderno.');
+      notes = notes.filter(n => n.id !== id);
+      persistNotes();
+      if (currentNoteId === id) selectNote(notes[0].id);
+      else renderNotesList();
+    }
+
+    function setFilter(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderNotesList();
+    }
+
+    function renderNotesList() {
+      const list = document.getElementById('notesList');
+      list.innerHTML = '';
+      const filtered = notes.filter(n => currentFilter === 'all' || n.category === currentFilter);
+      filtered.forEach(note => {
+        const div = document.createElement('div');
+        div.className = 'note-item' + (note.id === currentNoteId ? ' active' : '');
+        div.onclick = () => {
+          selectNote(note.id);
+          if (window.innerWidth <= 900) toggleSidebar();
+        };
+        const tagClass = note.category === 'biblia' ? 'tag-biblia' : 'tag-estudo';
+        const tagLabel = note.category === 'biblia' ? '✝️ Bíblia' : '📚 Estudo';
+        div.innerHTML = `
+          <div class="note-item-title">${escapeHtml(note.title)}</div>
+          <button class="delete-note" onclick="deleteNote('${note.id}', event)" title="Excluir">✕</button>
+          <div class="note-item-meta">
+            <span class="note-tag ${tagClass}">${tagLabel}</span>
+            <span>${note.date}</span>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    // --- Modes & Stylus Drawing ---
+    function setMode(mode) {
+      currentMode = mode;
+      ['modeTextBtn', 'modePenBtn', 'modeHighlighterBtn', 'modeEraserBtn'].forEach(id => {
+        document.getElementById(id).classList.remove('active');
+      });
+      if (mode === 'text') {
+        document.getElementById('modeTextBtn').classList.add('active');
+        canvas.classList.remove('drawing-active');
+      } else {
+        canvas.classList.add('drawing-active');
+        if (mode === 'pen') document.getElementById('modePenBtn').classList.add('active');
+        if (mode === 'highlighter') document.getElementById('modeHighlighterBtn').classList.add('active');
+        if (mode === 'eraser') document.getElementById('modeEraserBtn').classList.add('active');
+      }
+    }
+
+    function setInkColor(color, swatchEl) {
+      inkColor = color;
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+      if (swatchEl) swatchEl.classList.add('active');
+    }
+
+    function setupPointerDrawing() {
+      canvas.addEventListener('pointerdown', (e) => {
+        if (currentMode === 'text') return;
+        // Palm rejection hint: prioritize pen when stylus is detected
+        if (e.pointerType === 'touch' && window._penDetected) return;
+        if (e.pointerType === 'pen') window._penDetected = true;
+
+        isDrawing = true;
+        canvas.setPointerCapture(e.pointerId);
+        const rect = canvas.getBoundingClientRect();
+        lastX = e.clientX - rect.left;
+        lastY = e.clientY - rect.top;
+      });
+
+      canvas.addEventListener('pointermove', (e) => {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const pressure = e.pressure && e.pressure > 0 ? e.pressure : 0.5;
+        const baseSize = parseFloat(document.getElementById('penSize').value);
+
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        if (currentMode === 'eraser') {
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.lineWidth = baseSize * 3;
+        } else if (currentMode === 'highlighter') {
+          ctx.globalCompositeOperation = 'multiply';
+          ctx.globalAlpha = 0.35;
+          ctx.strokeStyle = inkColor;
+          ctx.lineWidth = Math.max(baseSize, 16);
+        } else {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.strokeStyle = inkColor;
+          ctx.lineWidth = baseSize * (0.6 + pressure * 1.1);
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.restore();
+
+        lastX = x;
+        lastY = y;
+      });
+
+      const endStroke = () => {
+        if (!isDrawing) return;
+        isDrawing = false;
+        saveCurrentNote();
+      };
+      canvas.addEventListener('pointerup', endStroke);
+      canvas.addEventListener('pointercancel', endStroke);
+    }
+
+    function clearDrawing() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      saveCurrentNote();
+    }
+
+    // --- Paper & Fonts ---
+    function changeFont(fontFamily) {
+      document.getElementById('noteEditor').style.fontFamily = fontFamily;
+      saveCurrentNote();
+    }
+
+    function changePattern(pattern, shouldSave = true) {
+      const sheet = document.getElementById('pageSheet');
+      sheet.classList.remove('pattern-lined', 'pattern-dotted', 'pattern-grid', 'pattern-blank');
+      sheet.classList.add(pattern);
+      if (shouldSave) saveCurrentNote();
+    }
+
+    function changePaperColor(colorClass, shouldSave = true) {
+      const sheet = document.getElementById('pageSheet');
+      sheet.classList.remove('paper-white', 'paper-cream', 'paper-lilac', 'paper-dark');
+      sheet.classList.add(colorClass);
+      if (shouldSave) saveCurrentNote();
+    }
+
+    async function loadCustomFont(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const fontName = file.name.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const dataUrl = e.target.result;
+        try {
+          const face = new FontFace(fontName, `url(${dataUrl})`);
+          await face.load();
+          document.fonts.add(face);
+          addFontOption(fontName);
+          document.getElementById('fontSelector').value = `'${fontName}', sans-serif`;
+          changeFont(`'${fontName}', sans-serif`);
+
+          const savedFonts = JSON.parse(localStorage.getItem(FONTS_KEY) || '[]');
+          savedFonts.push({ name: fontName, dataUrl });
+          localStorage.setItem(FONTS_KEY, JSON.stringify(savedFonts));
+        } catch (err) {
+          alert('Não foi possível carregar este arquivo de fonte.');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function restoreSavedFonts() {
+      const savedFonts = JSON.parse(localStorage.getItem(FONTS_KEY) || '[]');
+      for (const f of savedFonts) {
+        try {
+          const face = new FontFace(f.name, `url(${f.dataUrl})`);
+          await face.load();
+          document.fonts.add(face);
+          addFontOption(f.name);
+        } catch (_) {}
+      }
+    }
+
+    function addFontOption(fontName) {
+      const sel = document.getElementById('fontSelector');
+      const val = `'${fontName}', sans-serif`;
+      if (![...sel.options].some(o => o.value === val)) {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = `✨ ${fontName} (Dispositivo)`;
+        sel.appendChild(opt);
+      }
+    }
+
+    function insertBiblicalTemplate() {
+      const editor = document.getElementById('noteEditor');
+      const tpl = `
+<b>📖 Passagem &amp; Contexto Histórico:</b><br>
+• Livro / Capítulo / Versículos:<br>
+• Quem escreveu e para quem:<br><br>
+<b>🔍 Observação &amp; Palavras-Chave:</b><br>
+• O que o texto diz literalmente?<br><br>
+<b>💡 Aplicação Pessoal &amp; Oração:</b><br>
+• O que Deus fala ao meu coração hoje?<br>
+• Pedido de oração:<br><hr><br>`;
+      editor.innerHTML = tpl + editor.innerHTML;
+      saveCurrentNote();
+    }
+
+    // --- Floating Elements (Post-its, Stickers, Images) ---
+    function addPostIt() {
+      const colors = ['#FFF59D', '#F8BBD0', '#E1BEE7', '#C8E6C9', '#BBDEFB'];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      createFloatingElement({
+        type: 'postit',
+        x: 120 + Math.random() * 180,
+        y: 220 + Math.random() * 140,
+        color,
+        text: 'Escreva um lembrete ou versículo...'
+      }, true);
+    }
+
+    function renderStickerGrid() {
+      const grid = document.getElementById('stickerGrid');
+      grid.innerHTML = '';
+      STICKERS.forEach(st => {
+        const div = document.createElement('div');
+        div.className = 'sticker-choice';
+        div.innerHTML = `<div style="width:52px;height:52px;margin:0 auto">${st.svg}</div><span>${st.name}</span>`;
+        div.onclick = () => {
+          createFloatingElement({
+            type: 'sticker',
+            x: 200 + Math.random() * 180,
+            y: 240 + Math.random() * 140,
+            width: 96,
+            svg: st.svg
+          }, true);
+          closeModal('stickerModal');
+        };
+        grid.appendChild(div);
+      });
+    }
+
+    function addImageFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        createFloatingElement({
+          type: 'image',
+          x: 140,
+          y: 240,
+          width: 240,
+          src: e.target.result
+        }, true);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function createFloatingElement(item, shouldSave) {
+      const sheet = document.getElementById('pageSheet');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'floating-item';
+      wrapper.dataset.type = item.type;
+      wrapper.style.left = item.x + 'px';
+      wrapper.style.top = item.y + 'px';
+
+      const controls = document.createElement('div');
+      controls.className = 'floating-controls';
+      if (item.type !== 'postit') {
+        const plusBtn = document.createElement('button');
+        plusBtn.textContent = '＋';
+        plusBtn.onclick = (e) => {
+          e.stopPropagation();
+          const box = wrapper.firstElementChild.nextElementSibling;
+          box.style.width = (box.offsetWidth + 24) + 'px';
+          if (item.type === 'sticker') box.style.height = (box.offsetHeight + 24) + 'px';
+          saveCurrentNote();
+        };
+        const minusBtn = document.createElement('button');
+        minusBtn.textContent = '－';
+        minusBtn.onclick = (e) => {
+          e.stopPropagation();
+          const box = wrapper.firstElementChild.nextElementSibling;
+          box.style.width = Math.max(48, box.offsetWidth - 24) + 'px';
+          if (item.type === 'sticker') box.style.height = Math.max(48, box.offsetHeight - 24) + 'px';
+          saveCurrentNote();
+        };
+        controls.append(plusBtn, minusBtn);
+      }
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '✕';
+      delBtn.onclick = (e) => {
+        e.stopPropagation();
+        wrapper.remove();
+        saveCurrentNote();
+      };
+      controls.appendChild(delBtn);
+      wrapper.appendChild(controls);
+
+      if (item.type === 'postit') {
+        wrapper.dataset.color = item.color;
+        const box = document.createElement('div');
+        box.className = 'postit-box';
+        box.style.background = item.color;
+        const content = document.createElement('div');
+        content.className = 'postit-content';
+        content.contentEditable = 'true';
+        content.innerHTML = item.text;
+        content.oninput = () => saveCurrentNote();
+        box.appendChild(content);
+        wrapper.appendChild(box);
+      } else if (item.type === 'sticker') {
+        const box = document.createElement('div');
+        box.className = 'sticker-box';
+        if (item.width) { box.style.width = item.width + 'px'; box.style.height = item.width + 'px'; }
+        box.innerHTML = item.svg;
+        wrapper.appendChild(box);
+      } else if (item.type === 'image') {
+        const box = document.createElement('div');
+        box.className = 'image-box';
+        if (item.width) box.style.width = item.width + 'px';
+        const img = document.createElement('img');
+        img.src = item.src;
+        box.appendChild(img);
+        wrapper.appendChild(box);
+      }
+
+      makeDraggable(wrapper);
+      sheet.appendChild(wrapper);
+      if (shouldSave) saveCurrentNote();
+    }
+
+    function makeDraggable(el) {
+      let dragging = false, startX = 0, startY = 0, origX = 0, origY = 0;
+      el.addEventListener('pointerdown', (e) => {
+        if (e.target.isContentEditable || e.target.tagName === 'BUTTON') return;
+        dragging = true;
+        el.setPointerCapture(e.pointerId);
+        startX = e.clientX;
+        startY = e.clientY;
+        origX = parseInt(el.style.left, 10) || 0;
+        origY = parseInt(el.style.top, 10) || 0;
+      });
+      el.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        el.style.left = (origX + e.clientX - startX) + 'px';
+        el.style.top = (origY + e.clientY - startY) + 'px';
+      });
+      el.addEventListener('pointerup', () => {
+        if (!dragging) return;
+        dragging = false;
+        saveCurrentNote();
+      });
+    }
+
+    // --- Share & Export ---
+    function openStickerModal() { document.getElementById('stickerModal').classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+    function openShareModal() {
+      const exportCanvas = renderNoteToImageCanvas();
+      exportCanvas.toBlob((blob) => {
+        shareBlob = blob;
+        document.getElementById('sharePreviewImg').src = URL.createObjectURL(blob);
+        document.getElementById('shareModal').classList.add('open');
+      }, 'image/png');
+    }
+
+    function renderNoteToImageCanvas() {
+      const sheet = document.getElementById('pageSheet');
+      const out = document.createElement('canvas');
+      out.width = sheet.offsetWidth;
+      out.height = sheet.offsetHeight;
+      const c = out.getContext('2d');
+
+      const bgMap = {
+        'paper-white': '#FFFFFF',
+        'paper-cream': '#FDF8EC',
+        'paper-lilac': '#F9F5FF',
+        'paper-dark': '#1E1B24'
+      };
+      const colorClass = [...sheet.classList].find(cls => bgMap[cls]) || 'paper-white';
+      c.fillStyle = bgMap[colorClass];
+      c.fillRect(0, 0, out.width, out.height);
+
+      // Draw title & text
+      c.fillStyle = colorClass === 'paper-dark' ? '#EFEBF5' : '#2D2638';
+      c.font = 'bold 28px Georgia, serif';
+      c.fillText(document.getElementById('noteTitle').value || 'Anotação', 48, 72);
+
+      c.font = '14px sans-serif';
+      c.fillStyle = '#7E57C2';
+      c.fillText(document.getElementById('noteReference').value || '', 48, 98);
+
+      c.fillStyle = colorClass === 'paper-dark' ? '#EFEBF5' : '#2D2638';
+      c.font = '17px sans-serif';
+      const lines = (document.getElementById('noteEditor').innerText || '').split('
+');
+      let y = 140;
+      for (const line of lines) {
+        c.fillText(line.slice(0, 82), 48, y);
+        y += 28;
+        if (y > out.height - 60) break;
+      }
+
+      // Draw stylus ink layer
+      c.drawImage(canvas, 0, 0);
+
+      // Draw watermark
+      c.fillStyle = 'rgba(126, 87, 194, 0.65)';
+      c.font = '600 13px sans-serif';
+      c.fillText('Scripta & Verbum • Caderno Digital', 48, out.height - 24);
+      return out;
+    }
+
+    async function nativeShareImage() {
+      if (!shareBlob) return;
+      const file = new File([shareBlob], 'anotacao-scripta-verbum.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: document.getElementById('noteTitle').value,
+          text: 'Minha anotação no Scripta & Verbum ✨',
+          files: [file]
+        });
+      } else {
+        downloadNotePNG();
+      }
+    }
+
+    function downloadNotePNG() {
+      if (!shareBlob) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(shareBlob);
+      a.download = 'anotacao-scripta-verbum.png';
+      a.click();
+    }
+
+    function shareWhatsAppText() {
+      const title = document.getElementById('noteTitle').value;
+      const ref = document.getElementById('noteReference').value;
+      const body = document.getElementById('noteEditor').innerText;
+      const msg = encodeURIComponent(`*${title}*
+${ref ? '_' + ref + '_
+
+' : '
+'}${body}`);
+      window.open(`https://wa.me/?text=${msg}`, '_blank');
+    }
+
+    function copyNoteSummary() {
+      const title = document.getElementById('noteTitle').value;
+      const body = document.getElementById('noteEditor').innerText;
+      navigator.clipboard.writeText(`${title}
+
+${body}`);
+      alert('Anotação copiada para a área de transferência!');
+    }
+
+    // --- Backup JSON ---
+    function exportBackupJSON() {
+      const blob = new Blob([JSON.stringify(notes, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `backup-scripta-verbum-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+
+    function importBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported) && imported.length) {
+            notes = imported;
+            persistNotes();
+            selectNote(notes[0].id);
+            alert('Backup restaurado com sucesso!');
+          }
+        } catch (_) {
+          alert('Arquivo JSON inválido.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+    }
+
+    // --- PWA Service Worker Registration ---
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('./service-worker.js')
+          .then((reg) => console.log('Service Worker registrado:', reg.scope))
+          .catch((err) => console.error('Erro ao registrar Service Worker:', err));
+      });
+    }
+  </script>
+</body>
+</html>
