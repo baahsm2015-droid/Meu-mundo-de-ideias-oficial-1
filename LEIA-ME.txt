@@ -1,13 +1,13 @@
-SCRIPTA & VERBUM — Caderno Digital & Estudo Bíblico (PWA)
+SCRIPTA & VERBUM — Caderno Digital & Estudo Bíblico (PWA - Versão Corrigida)
 
 Arquivos incluídos nesta pasta:
-- index.html           -> Aplicativo completo (já conectado ao manifest e ao service worker)
-- manifest.webmanifest -> Configuração de instalação do PWA (nome, tema, ícones)
-- service-worker.js    -> Suporte para funcionamento offline
+- index.html           -> Aplicativo corrigido (todos os botões, importação de fontes, caneta stylus, post-its, adesivos e compartilhamento ativos)
+- manifest.webmanifest -> Configuração de instalação do PWA
+- service-worker.js    -> Cache offline atualizado (v2)
 - icon-192.png         -> Ícone do aplicativo (192x192)
 - icon-512.png         -> Ícone do aplicativo (512x512)
 
-Como instalar no tablet / celular:
-1. Suba esta pasta descompactada em um serviço gratuito com HTTPS (ex.: Netlify Drop - app.netlify.com/drop, Vercel ou GitHub Pages).
-2. Abra o link gerado no navegador do seu tablet (Chrome, Edge ou Safari).
-3. Toque no menu do navegador e selecione "Instalar aplicativo" ou "Adicionar à tela inicial".
+Como usar:
+1. Descompacte a pasta "scripta-verbum" antes de abrir.
+2. Para testar localmente, abra o arquivo "index.html" no Chrome, Edge ou Safari.
+3. Para instalar como app no tablet/celular, envie a pasta descompactada para o Netlify Drop (app.netlify.com/drop) e toque em "Instalar aplicativo" / "Adicionar à tela inicial".

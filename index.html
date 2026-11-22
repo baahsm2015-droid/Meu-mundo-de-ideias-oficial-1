@@ -66,16 +66,6 @@
       font-weight: 700;
       color: var(--primary-dark);
     }
-    .brand span.badge {
-      font-family: 'Inter', sans-serif;
-      font-size: 0.65rem;
-      background: var(--primary-light);
-      color: var(--primary);
-      padding: 2px 6px;
-      border-radius: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
     .new-note-btn {
       margin: 14px 16px 8px;
       padding: 11px 14px;
@@ -189,6 +179,7 @@
       border-radius: 8px;
       cursor: pointer;
       color: var(--text-main);
+      text-align: center;
     }
     .backup-btn:hover { background: var(--primary-light); }
 
@@ -233,12 +224,28 @@
       align-items: center;
       gap: 5px;
       transition: 0.15s;
+      position: relative;
     }
     .tool-btn:hover { background: #F5F2FA; }
     .tool-btn.active {
       background: var(--primary);
       color: #fff;
       border-color: var(--primary);
+    }
+
+    /* Native file input overlay for reliable tablet/mobile tap */
+    .file-label-btn {
+      position: relative;
+      overflow: hidden;
+    }
+    .file-label-btn input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      font-size: 16px;
     }
 
     select.tool-select {
@@ -384,18 +391,19 @@
       cursor: move;
       border: 1px dashed transparent;
       transition: box-shadow 0.15s;
+      touch-action: none;
     }
     .floating-item:hover, .floating-item.selected {
       border-color: var(--primary);
     }
     .floating-controls {
       position: absolute;
-      top: -26px;
+      top: -28px;
       right: 0;
       display: none;
       gap: 4px;
       background: var(--primary-dark);
-      padding: 2px 6px;
+      padding: 3px 7px;
       border-radius: 6px;
     }
     .floating-item:hover .floating-controls,
@@ -406,13 +414,13 @@
       background: none;
       border: none;
       color: #fff;
-      font-size: 0.72rem;
+      font-size: 0.78rem;
       cursor: pointer;
-      padding: 1px 4px;
+      padding: 1px 5px;
     }
 
     .postit-box {
-      width: 190px;
+      width: 195px;
       min-height: 165px;
       padding: 14px;
       border-radius: 4px 4px 18px 4px;
@@ -534,6 +542,25 @@
       gap: 8px;
     }
 
+    /* Toast feedback */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--primary-dark);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .toast.show { opacity: 1; }
+
     .mobile-toggle { display: none; }
 
     @media (max-width: 900px) {
@@ -556,23 +583,25 @@
       <div class="brand">
         <span>📖 Scripta &amp; Verbum</span>
       </div>
-      <button class="mobile-toggle tool-btn" onclick="toggleSidebar()">✕</button>
+      <button type="button" class="mobile-toggle tool-btn" onclick="toggleSidebar()">✕</button>
     </div>
 
-    <button class="new-note-btn" onclick="createNewNote()">＋ Nova Anotação</button>
+    <button type="button" class="new-note-btn" onclick="createNewNote()">＋ Nova Anotação</button>
 
     <div class="category-tabs">
-      <button class="cat-btn active" data-filter="all" onclick="setFilter('all', this)">Todas</button>
-      <button class="cat-btn" data-filter="biblia" onclick="setFilter('biblia', this)">✝️ Bíblicas</button>
-      <button class="cat-btn" data-filter="estudo" onclick="setFilter('estudo', this)">📚 Estudos</button>
+      <button type="button" class="cat-btn active" data-filter="all" onclick="setFilter('all', this)">Todas</button>
+      <button type="button" class="cat-btn" data-filter="biblia" onclick="setFilter('biblia', this)">✝️ Bíblicas</button>
+      <button type="button" class="cat-btn" data-filter="estudo" onclick="setFilter('estudo', this)">📚 Estudos</button>
     </div>
 
     <div class="notes-list" id="notesList"></div>
 
     <div class="sidebar-footer">
-      <button class="backup-btn" onclick="exportBackupJSON()" title="Salvar backup das notas">💾 Backup</button>
-      <button class="backup-btn" onclick="document.getElementById('importJsonInput').click()" title="Restaurar backup">📂 Restaurar</button>
-      <input type="file" id="importJsonInput" accept=".json" style="display:none" onchange="importBackupJSON(event)" />
+      <button type="button" class="backup-btn" onclick="exportBackupJSON()" title="Salvar backup das notas">💾 Backup</button>
+      <label class="backup-btn file-label-btn" title="Restaurar backup">
+        📂 Restaurar
+        <input type="file" id="importJsonInput" accept=".json,application/json" onchange="importBackupJSON(event)" />
+      </label>
     </div>
   </aside>
 
@@ -581,12 +610,12 @@
     <!-- Toolbar -->
     <div class="toolbar">
       <div class="tool-group">
-        <button class="tool-btn mobile-toggle" onclick="toggleSidebar()">☰ Notas</button>
-        <button class="tool-btn active" id="modeTextBtn" onclick="setMode('text')">⌨️ Texto</button>
-        <button class="tool-btn" id="modePenBtn" onclick="setMode('pen')">✒️ Caneta</button>
-        <button class="tool-btn" id="modeHighlighterBtn" onclick="setMode('highlighter')">🖍️ Marca-texto</button>
-        <button class="tool-btn" id="modeEraserBtn" onclick="setMode('eraser')">🧹 Borracha</button>
-        <button class="tool-btn" onclick="clearDrawing()" title="Limpar traços da caneta">↺ Limpar Traço</button>
+        <button type="button" class="tool-btn mobile-toggle" onclick="toggleSidebar()">☰ Notas</button>
+        <button type="button" class="tool-btn active" id="modeTextBtn" onclick="setMode('text')">⌨️ Texto</button>
+        <button type="button" class="tool-btn" id="modePenBtn" onclick="setMode('pen')">✒️ Caneta</button>
+        <button type="button" class="tool-btn" id="modeHighlighterBtn" onclick="setMode('highlighter')">🖍️ Marca-texto</button>
+        <button type="button" class="tool-btn" id="modeEraserBtn" onclick="setMode('eraser')">🧹 Borracha</button>
+        <button type="button" class="tool-btn" onclick="clearDrawing()" title="Limpar traços da caneta">↺ Limpar Traço</button>
       </div>
 
       <div class="tool-group">
@@ -612,8 +641,10 @@
           <option value="'Cormorant Garamond', serif">Cormorant (Clássica)</option>
           <option value="'Patrick Hand', cursive">Patrick Hand (Manuscrita)</option>
         </select>
-        <button class="tool-btn" onclick="document.getElementById('fontFileInput').click()" title="Importar fonte .ttf ou .otf do tablet">＋ Fonte</button>
-        <input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" style="display:none" onchange="loadCustomFont(event)" />
+        <label class="tool-btn file-label-btn" title="Importar fonte .ttf, .otf, .woff ou .woff2 do dispositivo">
+          ＋ Fonte
+          <input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2,application/x-font-ttf,application/x-font-opentype,application/octet-stream" onchange="loadCustomFont(event)" />
+        </label>
       </div>
 
       <div class="tool-group">
@@ -629,15 +660,17 @@
           <option value="paper-lilac">Lilás Suave</option>
           <option value="paper-dark">Modo Escuro</option>
         </select>
-        <button class="tool-btn" onclick="insertBiblicalTemplate()" title="Inserir roteiro devocional/exegético">✝️ Roteiro Bíblico</button>
+        <button type="button" class="tool-btn" onclick="insertBiblicalTemplate()" title="Inserir roteiro devocional/exegético">✝️ Roteiro Bíblico</button>
       </div>
 
       <div class="tool-group">
-        <button class="tool-btn" onclick="addPostIt()">📝 Post-it</button>
-        <button class="tool-btn" onclick="openStickerModal()">✨ Adesivos</button>
-        <button class="tool-btn" onclick="document.getElementById('imageInput').click()">🖼️ Imagem</button>
-        <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="addImageFile(event)" />
-        <button class="tool-btn" style="background:#EDE7F6;color:#5E35B1;font-weight:600" onclick="openShareModal()">📤 Compartilhar</button>
+        <button type="button" class="tool-btn" onclick="addPostIt()">📝 Post-it</button>
+        <button type="button" class="tool-btn" onclick="openStickerModal()">✨ Adesivos</button>
+        <label class="tool-btn file-label-btn" title="Adicionar imagem do dispositivo">
+          🖼️ Imagem
+          <input type="file" id="imageInput" accept="image/*" onchange="addImageFile(event)" />
+        </label>
+        <button type="button" class="tool-btn" style="background:#EDE7F6;color:#5E35B1;font-weight:600" onclick="openShareModal()">📤 Compartilhar</button>
       </div>
     </div>
 
@@ -664,32 +697,34 @@
   </main>
 
   <!-- Sticker Modal -->
-  <div class="modal-backdrop" id="stickerModal">
+  <div class="modal-backdrop" id="stickerModal" onclick="if(event.target===this) closeModal('stickerModal')">
     <div class="modal-card">
       <div class="modal-header">
         <h3>✨ Adesivos Temáticos</h3>
-        <button class="close-modal" onclick="closeModal('stickerModal')">✕</button>
+        <button type="button" class="close-modal" onclick="closeModal('stickerModal')">✕</button>
       </div>
       <div class="sticker-grid" id="stickerGrid"></div>
     </div>
   </div>
 
   <!-- Share Modal -->
-  <div class="modal-backdrop" id="shareModal">
+  <div class="modal-backdrop" id="shareModal" onclick="if(event.target===this) closeModal('shareModal')">
     <div class="modal-card">
       <div class="modal-header">
         <h3>📤 Compartilhar nas Redes Sociais</h3>
-        <button class="close-modal" onclick="closeModal('shareModal')">✕</button>
+        <button type="button" class="close-modal" onclick="closeModal('shareModal')">✕</button>
       </div>
       <img id="sharePreviewImg" class="share-preview" alt="Prévia da nota" />
       <div class="share-actions">
-        <button class="tool-btn" style="justify-content:center;padding:10px" onclick="nativeShareImage()">📱 Instagram / Apps</button>
-        <button class="tool-btn" style="justify-content:center;padding:10px" onclick="downloadNotePNG()">⬇️ Baixar Imagem PNG</button>
-        <button class="tool-btn" style="justify-content:center;padding:10px" onclick="shareWhatsAppText()">💬 Enviar Texto WhatsApp</button>
-        <button class="tool-btn" style="justify-content:center;padding:10px" onclick="copyNoteSummary()">📋 Copiar Resumo</button>
+        <button type="button" class="tool-btn" style="justify-content:center;padding:10px" onclick="nativeShareImage()">📱 Instagram / Apps</button>
+        <button type="button" class="tool-btn" style="justify-content:center;padding:10px" onclick="downloadNotePNG()">⬇️ Baixar Imagem PNG</button>
+        <button type="button" class="tool-btn" style="justify-content:center;padding:10px" onclick="shareWhatsAppText()">💬 Enviar Texto WhatsApp</button>
+        <button type="button" class="tool-btn" style="justify-content:center;padding:10px" onclick="copyNoteSummary()">📋 Copiar Resumo</button>
       </div>
     </div>
   </div>
+
+  <div class="toast" id="toast"></div>
 
   <script>
     // --- State & Storage ---
@@ -718,14 +753,24 @@
     const canvas = document.getElementById('drawCanvas');
     const ctx = canvas.getContext('2d');
 
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
     function resizeCanvas() {
       const sheet = document.getElementById('pageSheet');
-      const temp = canvas.toDataURL();
+      const temp = canvas.width && canvas.height ? canvas.toDataURL() : null;
       canvas.width = sheet.offsetWidth;
       canvas.height = sheet.offsetHeight;
-      const img = new Image();
-      img.onload = () => ctx.drawImage(img, 0, 0);
-      img.src = temp;
+      if (temp) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = temp;
+      }
     }
 
     // --- Init ---
@@ -739,9 +784,13 @@
     });
 
     function loadNotes() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        notes = JSON.parse(raw);
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          notes = JSON.parse(raw);
+        }
+      } catch (e) {
+        notes = [];
       }
       if (!notes.length) {
         notes = [{
@@ -750,10 +799,7 @@
           category: 'biblia',
           reference: 'Salmos 23:1-6',
           date: new Date().toLocaleDateString('pt-BR'),
-          content: 'O Senhor é o meu pastor; nada me faltará.
-
-📌 Palavras-chave: Pastor, descanso, guia, confiança.
-💡 Aplicação: Descansar na direção de Deus mesmo nos vales.',
+          content: 'O Senhor é o meu pastor; nada me faltará.<br><br>📌 <b>Palavras-chave:</b> Pastor, descanso, guia, confiança.<br>💡 <b>Aplicação:</b> Descansar na direção de Deus mesmo nos vales.',
           font: "'Lora', serif",
           pattern: 'pattern-lined',
           paperColor: 'paper-cream',
@@ -769,7 +815,11 @@
     }
 
     function persistNotes() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+      } catch (e) {
+        showToast('Aviso: limite de armazenamento local atingido.');
+      }
     }
 
     function createNewNote() {
@@ -790,6 +840,7 @@
       persistNotes();
       renderNotesList();
       selectNote(newNote.id);
+      showToast('Nova anotação criada!');
     }
 
     function selectNote(id) {
@@ -873,11 +924,15 @@
 
     function deleteNote(id, e) {
       e.stopPropagation();
-      if (notes.length === 1) return alert('Mantenha pelo menos uma anotação no caderno.');
+      if (notes.length === 1) {
+        showToast('Mantenha pelo menos uma anotação no caderno.');
+        return;
+      }
       notes = notes.filter(n => n.id !== id);
       persistNotes();
       if (currentNoteId === id) selectNote(notes[0].id);
       else renderNotesList();
+      showToast('Anotação excluída.');
     }
 
     function setFilter(filter, btn) {
@@ -902,7 +957,7 @@
         const tagLabel = note.category === 'biblia' ? '✝️ Bíblia' : '📚 Estudo';
         div.innerHTML = `
           <div class="note-item-title">${escapeHtml(note.title)}</div>
-          <button class="delete-note" onclick="deleteNote('${note.id}', event)" title="Excluir">✕</button>
+          <button type="button" class="delete-note" onclick="deleteNote('${note.id}', event)" title="Excluir">✕</button>
           <div class="note-item-meta">
             <span class="note-tag ${tagClass}">${tagLabel}</span>
             <span>${note.date}</span>
@@ -938,7 +993,6 @@
     function setupPointerDrawing() {
       canvas.addEventListener('pointerdown', (e) => {
         if (currentMode === 'text') return;
-        // Palm rejection hint: prioritize pen when stylus is detected
         if (e.pointerType === 'touch' && window._penDetected) return;
         if (e.pointerType === 'pen') window._penDetected = true;
 
@@ -997,11 +1051,13 @@
     function clearDrawing() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       saveCurrentNote();
+      showToast('Traços da caneta limpos.');
     }
 
     // --- Paper & Fonts ---
     function changeFont(fontFamily) {
       document.getElementById('noteEditor').style.fontFamily = fontFamily;
+      document.getElementById('noteTitle').style.fontFamily = fontFamily;
       saveCurrentNote();
     }
 
@@ -1022,38 +1078,45 @@
     async function loadCustomFont(event) {
       const file = event.target.files[0];
       if (!file) return;
-      const fontName = file.name.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_') || 'FontePersonalizada';
       const reader = new FileReader();
       reader.onload = async (e) => {
         const dataUrl = e.target.result;
         try {
-          const face = new FontFace(fontName, `url(${dataUrl})`);
+          const face = new FontFace(cleanName, `url(${dataUrl})`);
           await face.load();
           document.fonts.add(face);
-          addFontOption(fontName);
-          document.getElementById('fontSelector').value = `'${fontName}', sans-serif`;
-          changeFont(`'${fontName}', sans-serif`);
+          addFontOption(cleanName);
+          const fontCss = `'${cleanName}', sans-serif`;
+          document.getElementById('fontSelector').value = fontCss;
+          changeFont(fontCss);
 
-          const savedFonts = JSON.parse(localStorage.getItem(FONTS_KEY) || '[]');
-          savedFonts.push({ name: fontName, dataUrl });
-          localStorage.setItem(FONTS_KEY, JSON.stringify(savedFonts));
+          try {
+            const savedFonts = JSON.parse(localStorage.getItem(FONTS_KEY) || '[]');
+            savedFonts.push({ name: cleanName, dataUrl });
+            localStorage.setItem(FONTS_KEY, JSON.stringify(savedFonts));
+          } catch (_) {}
+
+          showToast(`Fonte "${cleanName}" adicionada e aplicada!`);
         } catch (err) {
-          alert('Não foi possível carregar este arquivo de fonte.');
+          showToast('Arquivo inválido. Use .ttf, .otf, .woff ou .woff2.');
+        } finally {
+          event.target.value = '';
         }
       };
       reader.readAsDataURL(file);
     }
 
     async function restoreSavedFonts() {
-      const savedFonts = JSON.parse(localStorage.getItem(FONTS_KEY) || '[]');
-      for (const f of savedFonts) {
-        try {
+      try {
+        const savedFonts = JSON.parse(localStorage.getItem(FONTS_KEY) || '[]');
+        for (const f of savedFonts) {
           const face = new FontFace(f.name, `url(${f.dataUrl})`);
           await face.load();
           document.fonts.add(face);
           addFontOption(f.name);
-        } catch (_) {}
-      }
+        }
+      } catch (_) {}
     }
 
     function addFontOption(fontName) {
@@ -1069,17 +1132,10 @@
 
     function insertBiblicalTemplate() {
       const editor = document.getElementById('noteEditor');
-      const tpl = `
-<b>📖 Passagem &amp; Contexto Histórico:</b><br>
-• Livro / Capítulo / Versículos:<br>
-• Quem escreveu e para quem:<br><br>
-<b>🔍 Observação &amp; Palavras-Chave:</b><br>
-• O que o texto diz literalmente?<br><br>
-<b>💡 Aplicação Pessoal &amp; Oração:</b><br>
-• O que Deus fala ao meu coração hoje?<br>
-• Pedido de oração:<br><hr><br>`;
+      const tpl = `<b>📖 Passagem &amp; Contexto Histórico:</b><br>• Livro / Capítulo / Versículos:<br>• Quem escreveu e para quem:<br><br><b>🔍 Observação &amp; Palavras-Chave:</b><br>• O que o texto diz literalmente?<br><br><b>💡 Aplicação Pessoal &amp; Oração:</b><br>• O que Deus fala ao meu coração hoje?<br>• Pedido de oração:<br><hr><br>`;
       editor.innerHTML = tpl + editor.innerHTML;
       saveCurrentNote();
+      showToast('Roteiro bíblico inserido!');
     }
 
     // --- Floating Elements (Post-its, Stickers, Images) ---
@@ -1088,11 +1144,12 @@
       const color = colors[Math.floor(Math.random() * colors.length)];
       createFloatingElement({
         type: 'postit',
-        x: 120 + Math.random() * 180,
-        y: 220 + Math.random() * 140,
+        x: 120 + Math.round(Math.random() * 160),
+        y: 220 + Math.round(Math.random() * 120),
         color,
         text: 'Escreva um lembrete ou versículo...'
       }, true);
+      showToast('Post-it adicionado! Arraste para mover.');
     }
 
     function renderStickerGrid() {
@@ -1105,12 +1162,13 @@
         div.onclick = () => {
           createFloatingElement({
             type: 'sticker',
-            x: 200 + Math.random() * 180,
-            y: 240 + Math.random() * 140,
+            x: 200 + Math.round(Math.random() * 160),
+            y: 240 + Math.round(Math.random() * 120),
             width: 96,
             svg: st.svg
           }, true);
           closeModal('stickerModal');
+          showToast(`Adesivo "${st.name}" inserido!`);
         };
         grid.appendChild(div);
       });
@@ -1128,6 +1186,8 @@
           width: 240,
           src: e.target.result
         }, true);
+        showToast('Imagem adicionada à folha!');
+        event.target.value = '';
       };
       reader.readAsDataURL(file);
     }
@@ -1144,6 +1204,7 @@
       controls.className = 'floating-controls';
       if (item.type !== 'postit') {
         const plusBtn = document.createElement('button');
+        plusBtn.type = 'button';
         plusBtn.textContent = '＋';
         plusBtn.onclick = (e) => {
           e.stopPropagation();
@@ -1153,6 +1214,7 @@
           saveCurrentNote();
         };
         const minusBtn = document.createElement('button');
+        minusBtn.type = 'button';
         minusBtn.textContent = '－';
         minusBtn.onclick = (e) => {
           e.stopPropagation();
@@ -1164,6 +1226,7 @@
         controls.append(plusBtn, minusBtn);
       }
       const delBtn = document.createElement('button');
+      delBtn.type = 'button';
       delBtn.textContent = '✕';
       delBtn.onclick = (e) => {
         e.stopPropagation();
@@ -1209,6 +1272,8 @@
     function makeDraggable(el) {
       let dragging = false, startX = 0, startY = 0, origX = 0, origY = 0;
       el.addEventListener('pointerdown', (e) => {
+        document.querySelectorAll('.floating-item').forEach(i => i.classList.remove('selected'));
+        el.classList.add('selected');
         if (e.target.isContentEditable || e.target.tagName === 'BUTTON') return;
         dragging = true;
         el.setPointerCapture(e.pointerId);
@@ -1271,14 +1336,28 @@
 
       c.fillStyle = colorClass === 'paper-dark' ? '#EFEBF5' : '#2D2638';
       c.font = '17px sans-serif';
-      const lines = (document.getElementById('noteEditor').innerText || '').split('
-');
+      const lines = (document.getElementById('noteEditor').innerText || '').split('\n');
       let y = 140;
       for (const line of lines) {
         c.fillText(line.slice(0, 82), 48, y);
         y += 28;
         if (y > out.height - 60) break;
       }
+
+      // Draw floating post-its
+      document.querySelectorAll('.floating-item').forEach(el => {
+        const x = parseInt(el.style.left, 10) || 100;
+        const yPos = parseInt(el.style.top, 10) || 150;
+        if (el.dataset.type === 'postit') {
+          c.fillStyle = el.dataset.color || '#FFF59D';
+          c.fillRect(x, yPos, 195, 165);
+          c.fillStyle = '#2A2433';
+          c.font = '15px sans-serif';
+          const pText = el.querySelector('.postit-content').innerText || '';
+          c.fillText(pText.slice(0, 26), x + 12, yPos + 30);
+          if (pText.length > 26) c.fillText(pText.slice(26, 52), x + 12, yPos + 52);
+        }
+      });
 
       // Draw stylus ink layer
       c.drawImage(canvas, 0, 0);
@@ -1294,11 +1373,13 @@
       if (!shareBlob) return;
       const file = new File([shareBlob], 'anotacao-scripta-verbum.png', { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: document.getElementById('noteTitle').value,
-          text: 'Minha anotação no Scripta & Verbum ✨',
-          files: [file]
-        });
+        try {
+          await navigator.share({
+            title: document.getElementById('noteTitle').value,
+            text: 'Minha anotação no Scripta & Verbum ✨',
+            files: [file]
+          });
+        } catch (_) {}
       } else {
         downloadNotePNG();
       }
@@ -1310,27 +1391,22 @@
       a.href = URL.createObjectURL(shareBlob);
       a.download = 'anotacao-scripta-verbum.png';
       a.click();
+      showToast('Imagem PNG salva!');
     }
 
     function shareWhatsAppText() {
       const title = document.getElementById('noteTitle').value;
       const ref = document.getElementById('noteReference').value;
       const body = document.getElementById('noteEditor').innerText;
-      const msg = encodeURIComponent(`*${title}*
-${ref ? '_' + ref + '_
-
-' : '
-'}${body}`);
+      const msg = encodeURIComponent(`*${title}*\n${ref ? '_' + ref + '_\n\n' : '\n'}${body}`);
       window.open(`https://wa.me/?text=${msg}`, '_blank');
     }
 
     function copyNoteSummary() {
       const title = document.getElementById('noteTitle').value;
       const body = document.getElementById('noteEditor').innerText;
-      navigator.clipboard.writeText(`${title}
-
-${body}`);
-      alert('Anotação copiada para a área de transferência!');
+      navigator.clipboard.writeText(`${title}\n\n${body}`);
+      showToast('Anotação copiada para a área de transferência!');
     }
 
     // --- Backup JSON ---
@@ -1340,6 +1416,7 @@ ${body}`);
       a.href = URL.createObjectURL(blob);
       a.download = `backup-scripta-verbum-${new Date().toISOString().slice(0,10)}.json`;
       a.click();
+      showToast('Backup JSON baixado!');
     }
 
     function importBackupJSON(event) {
@@ -1353,17 +1430,19 @@ ${body}`);
             notes = imported;
             persistNotes();
             selectNote(notes[0].id);
-            alert('Backup restaurado com sucesso!');
+            showToast('Backup restaurado com sucesso!');
           }
         } catch (_) {
-          alert('Arquivo JSON inválido.');
+          showToast('Arquivo JSON inválido.');
+        } finally {
+          event.target.value = '';
         }
       };
       reader.readAsText(file);
     }
 
     function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+      return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
     }
 
     // --- PWA Service Worker Registration ---
